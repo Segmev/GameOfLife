@@ -11,8 +11,9 @@ import (
 	"github.com/hajimehoshi/ebiten"
 )
 
-var maxX, maxY = 800, 600
-var cells = 1000
+var maxX, maxY = 160, 160
+var scale = 6.0
+var cells = 2000
 
 func displayTerm(tab [][]int) {
 	var buffer bytes.Buffer
@@ -40,21 +41,15 @@ func display(tab [][]int, screen *ebiten.Image) {
 
 	for j := 0; j < maxY; j++ {
 		for i := 0; i < maxX; i++ {
-			if tab[j][i] == 0 {
-			} else if tab[j][i] < 3 {
-				drawRect(screen, j, i, color.White)
-			} else if tab[j][i] < 6 {
-				drawRect(screen, j, i, color.White)
-			} else if tab[j][i] < 10 {
-				drawRect(screen, j, i, color.White)
-			} else {
-				drawRect(screen, j, i, color.White)
+			if tab[j][i] > 0 {
+				drawRect(screen, j, i, color.NRGBA{uint8(tab[j][i] * 3), uint8(tab[j][i] * 3), 0xDD, 0xff})
 			}
 		}
 	}
 }
 
 func updateTab(tab [][]int) [][]int {
+
 	buff := make([][]int, maxY)
 	for i := 0; i < maxY; i++ {
 		buff[i] = make([]int, maxX)
@@ -76,7 +71,7 @@ func updateTab(tab [][]int) [][]int {
 				}
 			}
 
-			if tab[j][i] > 15 {
+			if tab[j][i] > 40 {
 				for a := 0; a <= 1; a++ {
 					for b := -1; b <= 0; b++ {
 						if !(a == 0 && b == 0) {
@@ -114,12 +109,21 @@ func drawRect(screen *ebiten.Image, x, y int, color color.Color) {
 	screen.DrawImage(square, opts)
 }
 
+var count = 0
+
 func update(screen *ebiten.Image) error {
-
-	test = updateTab(test)
+	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+		cursorX, cursorY := ebiten.CursorPosition()
+		if cursorX >= 0 && cursorX < maxX && cursorY >= 0 && cursorY < maxY {
+			test[cursorX][cursorY] = 1
+		}
+	} else {
+		if ebiten.IsRunningSlowly() {
+			return nil
+		}
+		test = updateTab(test)
+	}
 	display(test[:], screen)
-	time.Sleep(120 * time.Millisecond)
-
 	return nil
 }
 
@@ -129,10 +133,14 @@ func main() {
 	args := os.Args[1:]
 	if len(args) > 1 {
 		if nb, err := strconv.Atoi(args[0]); err == nil {
-			maxX = nb
+			if nb > 50 {
+				maxX = nb
+			}
 		}
 		if nb, err := strconv.Atoi(args[1]); err == nil {
-			maxY = nb
+			if nb > 50 {
+				maxY = nb
+			}
 		}
 	}
 	if len(args) > 2 {
@@ -148,11 +156,5 @@ func main() {
 	fillTab(test)
 	square, _ = ebiten.NewImage(1, 1, ebiten.FilterNearest)
 
-	ebiten.Run(update, maxX, maxY, 1, "Hello world!")
-
-	//for true {
-	//	test = updateTab(test)
-	//	display(test[:])
-	//	time.Sleep(120 * time.Millisecond)
-	//}
+	ebiten.Run(update, maxX, maxY, scale, "Hello world!")
 }
