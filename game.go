@@ -13,7 +13,7 @@ import (
 
 var maxX, maxY = 160, 160
 var scale = 6.0
-var cells = 2000
+var cells = 0
 
 func displayTerm(tab [][]int) {
 	var buffer bytes.Buffer
@@ -71,7 +71,7 @@ func updateTab(tab [][]int) [][]int {
 				}
 			}
 
-			if tab[j][i] > 40 {
+			if tab[j][i] > 70 {
 				for a := 0; a <= 1; a++ {
 					for b := -1; b <= 0; b++ {
 						if !(a == 0 && b == 0) {
@@ -115,13 +115,13 @@ func update(screen *ebiten.Image) error {
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
 		cursorX, cursorY := ebiten.CursorPosition()
 		if cursorX >= 0 && cursorX < maxX && cursorY >= 0 && cursorY < maxY {
-			test[cursorX][cursorY] = 1
+			test[cursorX][cursorY]++
 		}
 	} else {
-		if ebiten.IsRunningSlowly() {
-			return nil
-		}
 		test = updateTab(test)
+	}
+	if ebiten.IsRunningSlowly() {
+		return nil
 	}
 	display(test[:], screen)
 	return nil
