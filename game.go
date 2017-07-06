@@ -11,7 +11,7 @@ import (
 	"github.com/hajimehoshi/ebiten"
 )
 
-var maxX, maxY = 160, 160
+var maxX, maxY = 100, 100
 var scale = 6.0
 var cells = 0
 
@@ -42,7 +42,7 @@ func display(tab [][]int, screen *ebiten.Image) {
 	for j := 0; j < maxY; j++ {
 		for i := 0; i < maxX; i++ {
 			if tab[j][i] > 0 {
-				drawRect(screen, j, i, color.NRGBA{uint8(tab[j][i] * 3), uint8(tab[j][i] * 3), 0xDD, 0xff})
+				drawRect(screen, j, i, color.NRGBA{uint8(tab[j][i]), uint8(tab[j][i]), 0xDD, 0xff})
 			}
 		}
 	}
@@ -71,7 +71,7 @@ func updateTab(tab [][]int) [][]int {
 				}
 			}
 
-			if tab[j][i] > 70 {
+			if tab[j][i] > 200 {
 				for a := 0; a <= 1; a++ {
 					for b := -1; b <= 0; b++ {
 						if !(a == 0 && b == 0) {
@@ -111,13 +111,28 @@ func drawRect(screen *ebiten.Image, x, y int, color color.Color) {
 
 var count = 0
 
-func update(screen *ebiten.Image) error {
+func handleInputs() bool {
+	inputDetected := false
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+		inputDetected = true
 		cursorX, cursorY := ebiten.CursorPosition()
 		if cursorX >= 0 && cursorX < maxX && cursorY >= 0 && cursorY < maxY {
 			test[cursorX][cursorY]++
 		}
-	} else {
+	}
+
+	if ebiten.IsKeyPressed(ebiten.KeyR) {
+		inputDetected = true
+		test = make([][]int, maxY)
+		for i := 0; i < maxY; i++ {
+			test[i] = make([]int, maxX)
+		}
+	}
+	return inputDetected
+}
+
+func update(screen *ebiten.Image) error {
+	if !handleInputs() {
 		test = updateTab(test)
 	}
 	if ebiten.IsRunningSlowly() {
