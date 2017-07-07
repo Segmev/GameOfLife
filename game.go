@@ -15,6 +15,7 @@ var (
 	cells      = 0
 	tab        [][]int
 	pixels     []uint8
+	nbRand     = 0
 )
 
 func display(tab [][]int, screen *ebiten.Image) {
@@ -57,11 +58,16 @@ func updateTab(tab [][]int) [][]int {
 				}
 			}
 			if tab[j][i] > 200 {
+				nbRand = (nbRand + 13) % 100
 				for a := 0; a <= 1; a++ {
 					for b := -1; b <= 0; b++ {
 						if !(a == 0 && b == 0) {
 							if j+a >= 0 && j+a < maxY && i+b >= 0 && i+b < maxX {
-								buff[j+a][i+b]++
+								if nbRand < 20 {
+									buff[j+a][i+b]++
+								} else {
+									buff[j+a][i+b] = 0
+								}
 							}
 						}
 					}
