@@ -1,8 +1,6 @@
 package main
 
 import (
-	"bytes"
-	"image/color"
 	"math/rand"
 	"os"
 	"strconv"
@@ -11,54 +9,42 @@ import (
 	"github.com/hajimehoshi/ebiten"
 )
 
-var maxX, maxY = 100, 100
-var scale = 6.0
-var cells = 0
-
-func displayTerm(tab [][]int) {
-	var buffer bytes.Buffer
-
-	for j := 0; j < maxY; j++ {
-		buffer.WriteString("   ")
-		for i := 0; i < maxX; i++ {
-			if tab[j][i] == 0 {
-				buffer.WriteString("  ")
-			} else if tab[j][i] < 3 {
-				buffer.WriteString("¤ ")
-			} else if tab[j][i] < 6 {
-				buffer.WriteString("* ")
-			} else if tab[j][i] < 10 {
-				buffer.WriteString("% ")
-			} else {
-				buffer.WriteString("# ")
-			}
-		}
-		buffer.WriteString("\n")
-	}
-}
+var (
+	maxX, maxY = 150, 100
+	scale      = 4.0
+	cells      = 0
+	tab        [][]int
+	pixels     []uint8
+)
 
 func display(tab [][]int, screen *ebiten.Image) {
-
-	for j := 0; j < maxY; j++ {
-		for i := 0; i < maxX; i++ {
-			if tab[j][i] > 0 {
-				drawRect(screen, j, i, color.NRGBA{uint8(tab[j][i]), uint8(tab[j][i]), 0xDD, 0xff})
+	for y := 0; y < maxY; y++ {
+		for x := 0; x < maxX; x++ {
+			pos := maxX*y*4 + 4*x
+			if tab[y][x] > 0 {
+				pixels[pos] = uint8(tab[y][x])
+				pixels[pos+1] = uint8(tab[y][x])
+				pixels[pos+2] = 0xDD
+				pixels[pos+3] = 0xff
+			} else {
+				pixels[pos] = 0
+				pixels[pos+1] = 0
+				pixels[pos+2] = 0
+				pixels[pos+3] = 0
 			}
 		}
 	}
+	screen.ReplacePixels(pixels)
 }
 
 func updateTab(tab [][]int) [][]int {
-
 	buff := make([][]int, maxY)
 	for i := 0; i < maxY; i++ {
 		buff[i] = make([]int, maxX)
 	}
-
 	for j := 0; j < maxY; j++ {
 		for i := 0; i < maxX; i++ {
 			c := 0
-
 			for a := -1; a <= 1; a++ {
 				for b := -1; b <= 1; b++ {
 					if !(a == 0 && b == 0) {
@@ -70,7 +56,6 @@ func updateTab(tab [][]int) [][]int {
 					}
 				}
 			}
-
 			if tab[j][i] > 200 {
 				for a := 0; a <= 1; a++ {
 					for b := -1; b <= 0; b++ {
@@ -82,7 +67,6 @@ func updateTab(tab [][]int) [][]int {
 					}
 				}
 			}
-
 			if c == 3 {
 				buff[j][i] = tab[j][i] + 1
 			} else if tab[j][i] > 0 && c == 2 {
@@ -102,12 +86,12 @@ func fillTab(tab [][]int) {
 
 var square *ebiten.Image
 
-func drawRect(screen *ebiten.Image, x, y int, color color.Color) {
-	opts := &ebiten.DrawImageOptions{}
-	square.Fill(color)
-	opts.GeoM.Translate(float64(x), float64(y))
-	screen.DrawImage(square, opts)
-}
+// func drawRect(screen *ebiten.Image, x, y int, color color.Color) {
+// 	opts := &ebiten.DrawImageOptions{}
+// 	square.Fill(color)
+// 	opts.GeoM.Translate(float64(x), float64(y))
+// 	screen.DrawImage(square, opts)
+// }
 
 var count = 0
 
@@ -117,15 +101,26 @@ func handleInputs() bool {
 		inputDetected = true
 		cursorX, cursorY := ebiten.CursorPosition()
 		if cursorX >= 0 && cursorX < maxX && cursorY >= 0 && cursorY < maxY {
-			test[cursorX][cursorY]++
+			tab[cursorY][cursorX]++
 		}
+	}
+	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight) {
+		inputDetected = true
+		cursorX, cursorY := ebiten.CursorPosition()
+		if cursorX >= 0 && cursorX < maxX && cursorY >= 0 && cursorY < maxY {
+			tab[cursorY][cursorX]--
+		}
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyEscape) {
+		inputDetected = true
+		os.Exit(0)
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyR) {
 		inputDetected = true
-		test = make([][]int, maxY)
+		tab = make([][]int, maxY)
 		for i := 0; i < maxY; i++ {
-			test[i] = make([]int, maxX)
+			tab[i] = make([]int, maxX)
 		}
 	}
 	return inputDetected
@@ -133,16 +128,14 @@ func handleInputs() bool {
 
 func update(screen *ebiten.Image) error {
 	if !handleInputs() {
-		test = updateTab(test)
+		tab = updateTab(tab)
 	}
 	if ebiten.IsRunningSlowly() {
 		return nil
 	}
-	display(test[:], screen)
+	display(tab[:], screen)
 	return nil
 }
-
-var test [][]int
 
 func main() {
 	args := os.Args[1:]
@@ -163,13 +156,12 @@ func main() {
 			cells = nb
 		}
 	}
-	test = make([][]int, maxY)
+	tab = make([][]int, maxY)
+	pixels = make([]uint8, maxX*maxY*4)
 	for i := 0; i < maxY; i++ {
-		test[i] = make([]int, maxX)
+		tab[i] = make([]int, maxX)
 	}
 
-	fillTab(test)
-	square, _ = ebiten.NewImage(1, 1, ebiten.FilterNearest)
-
-	ebiten.Run(update, maxX, maxY, scale, "Hello world!")
+	fillTab(tab)
+	ebiten.Run(update, maxX, maxY, scale, "Game of Life - Revisited by Segmev")
 }
