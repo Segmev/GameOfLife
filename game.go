@@ -22,15 +22,15 @@ func display(tab [][]int, screen *ebiten.Image) {
 		for x := 0; x < maxX; x++ {
 			pos := maxX*y*4 + 4*x
 			if tab[y][x] > 0 {
-				pixels[pos] = uint8(tab[y][x])
-				pixels[pos+1] = uint8(tab[y][x])
-				pixels[pos+2] = 0xDD
+				pixels[pos] = 30 + uint8(tab[y][x])
+				pixels[pos+1] = 30 + uint8(tab[y][x])
+				pixels[pos+2] = 0xFF
 				pixels[pos+3] = 0xff
 			} else {
-				pixels[pos] = 0
-				pixels[pos+1] = 0
-				pixels[pos+2] = 0
-				pixels[pos+3] = 0
+				pixels[pos] = 0x20
+				pixels[pos+1] = 0x23
+				pixels[pos+2] = 0x20
+				pixels[pos+3] = 0xAA
 			}
 		}
 	}
