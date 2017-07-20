@@ -1,18 +1,20 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 	"os"
 	"strconv"
 	"time"
 
 	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
 var (
 	maxX, maxY = 150, 100
 	scale      = 4.0
-	cells      = 0
+	cells      = 300
 	tab        [][]int
 	pixels     []uint8
 	nbRand     = 0
@@ -85,9 +87,12 @@ func updateTab(tab [][]int) [][]int {
 }
 
 func fillTab(tab [][]int) {
+	value := 1
 	rand.Seed(time.Now().UTC().UnixNano())
 	for z := 0; z < cells; z++ {
-		tab[rand.Intn(maxY)][rand.Intn(maxX)] = 1
+		tab[rand.Intn(maxY)][rand.Intn(maxX)] = value
+		value += 53
+		value = (value % 150) + 1
 	}
 }
 
@@ -112,6 +117,11 @@ func handleInputs() bool {
 		os.Exit(0)
 	}
 
+	if ebiten.IsKeyPressed(ebiten.KeyG) {
+		fillTab(tab)
+		inputDetected = true
+	}
+
 	if ebiten.IsKeyPressed(ebiten.KeyR) {
 		inputDetected = true
 		tab = make([][]int, maxY)
@@ -130,6 +140,8 @@ func update(screen *ebiten.Image) error {
 		return nil
 	}
 	display(tab[:], screen)
+	msg := fmt.Sprintf(`Keys: R, G, Esc and clicks`)
+	ebitenutil.DebugPrint(screen, msg)
 	return nil
 }
 
