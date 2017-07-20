@@ -18,6 +18,7 @@ var (
 	tab        [][]int
 	pixels     []uint8
 	nbRand     = 0
+	square     *ebiten.Image
 )
 
 func display(tab [][]int, screen *ebiten.Image) {
@@ -94,17 +95,6 @@ func fillTab(tab [][]int) {
 		value = (value % 150) + 1
 	}
 }
-
-var square *ebiten.Image
-
-// func drawRect(screen *ebiten.Image, x, y int, color color.Color) {
-// 	opts := &ebiten.DrawImageOptions{}
-// 	square.Fill(color)
-// 	opts.GeoM.Translate(float64(x), float64(y))
-// 	screen.DrawImage(square, opts)
-// }
-
-var count = 0
 
 func handleInputs() bool {
 	inputDetected := false
