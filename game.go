@@ -19,6 +19,8 @@ var (
 	pixels     []uint8
 	nbRand     = 0
 	square     *ebiten.Image
+	showInfo   = true
+	timer      = time.NewTimer(time.Millisecond * 50)
 )
 
 func display(tab [][]int, screen *ebiten.Image) {
@@ -122,6 +124,15 @@ func handleInputs() bool {
 		inputDetected = true
 	}
 
+	if ebiten.IsKeyPressed(ebiten.KeyH) {
+		timer.Stop()
+		timer = time.NewTimer(time.Millisecond * 50)
+		go func() {
+			<-timer.C
+			showInfo = !showInfo
+		}()
+	}
+
 	if ebiten.IsKeyPressed(ebiten.KeyR) {
 		inputDetected = true
 		tab = make([][]int, maxY)
@@ -140,8 +151,10 @@ func update(screen *ebiten.Image) error {
 		return nil
 	}
 	display(tab[:], screen)
-	msg := fmt.Sprintf(`Keys: R, G, Esc and clicks`)
-	ebitenutil.DebugPrint(screen, msg)
+	if showInfo {
+		msg := fmt.Sprintf(`Keys: R, G, Esc and clicks (H to hide this msg)`)
+		ebitenutil.DebugPrint(screen, msg)
+	}
 	return nil
 }
 
