@@ -12,8 +12,8 @@ import (
 )
 
 var (
-	maxX, maxY = 150, 100
-	scale      = 4.0
+	maxX, maxY = 300, 200
+	scale      = 3.0
 	cells      = 300
 	tab        [][]int
 	pixels     []uint8
@@ -152,7 +152,7 @@ func update(screen *ebiten.Image) error {
 	}
 	display(tab[:], screen)
 	if showInfo {
-		msg := fmt.Sprintf(`Keys: R, G, Esc and clicks (H to hide this msg)`)
+		msg := fmt.Sprintf(`Keys: G, R, Esc and clicks (H to hide/show help)`)
 		ebitenutil.DebugPrint(screen, msg)
 	}
 	return nil
